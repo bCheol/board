@@ -337,7 +337,7 @@ public class AccountController {
                         ra.addFlashAttribute("message", "이름은 5글자까지 가능합니다.");
                         break;
                     }
-                    if (accountUserDetails.getName().equals(aesUtil.encrypt(value))) {
+                    if (accountUserDetails.getHsName().equals(aesUtil.createHashValue(value))) {
                         ra.addFlashAttribute("message", "현재 이름과 같습니다.");
                         break;
                     }
@@ -347,7 +347,7 @@ public class AccountController {
                     } else {
                         int result = accountService.updateInfo(accountUserDetails.getUsername(), field, value);
                         if (result == 1) {
-                            accountUserDetails.setName(aesUtil.encrypt(value));
+                            accountUserDetails.setHsName(aesUtil.createHashValue(value));
                             ra.addFlashAttribute("message", "이름 수정완료");
                         }
                     }
@@ -362,7 +362,7 @@ public class AccountController {
                         ra.addFlashAttribute("message", "전화번호 11글자만 가능합니다.");
                         break;
                     }
-                    if (accountUserDetails.getPhone().equals(aesUtil.encrypt(value))) {
+                    if (accountUserDetails.getHsPhone().equals(aesUtil.createHashValue(value))) {
                         ra.addFlashAttribute("message", "현재 번호와 같습니다.");
                         break;
                     }
@@ -372,7 +372,7 @@ public class AccountController {
                     } else {
                         int result = accountService.updateInfo(accountUserDetails.getUsername(), field, value);
                         if (result == 1) {
-                            accountUserDetails.setPhone(aesUtil.encrypt(value));
+                            accountUserDetails.setHsPhone(aesUtil.createHashValue(value));
                             ra.addFlashAttribute("message", "전화번호 수정완료");
                         }
                     }

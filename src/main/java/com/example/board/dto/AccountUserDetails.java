@@ -60,24 +60,24 @@ public class AccountUserDetails implements UserDetails {
         return accountEntity.getNickName();
     }
 
-    public String getName() {
-        return accountEntity.getName();
+    public String getHsName() {
+        return accountEntity.getHsName();
     }
 
-    public String getPhone() {
-        return accountEntity.getPhone();
+    public String getHsPhone() {
+        return accountEntity.getHsPhone();
     }
 
     public void setNickName(String nickName) {
         accountEntity.setNickName(nickName);
     }
 
-    public void setName(String name) {
-        accountEntity.setName(name);
+    public void setHsName(String name) {
+        accountEntity.setHsName(name);
     }
 
-    public void setPhone(String phone) {
-        accountEntity.setPhone(phone);
+    public void setHsPhone(String phone) {
+        accountEntity.setHsPhone(phone);
     }
 
     public int getWithdrawCheck() {

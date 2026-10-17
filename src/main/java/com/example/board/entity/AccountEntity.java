@@ -35,8 +35,14 @@ public class AccountEntity {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "hs_name")
+    private String hsName;
+
     @Column(name = "phone")
     private String phone;
+
+    @Column(name = "hs_phone")
+    private String hsPhone;
 
     @Column(name = "exist")
     private Integer exist;

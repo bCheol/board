@@ -27,14 +27,18 @@ public class AccountService {
 
         String encodePassword = passwordEncoder.encode(password);
         String encryptName = aesUtil.encrypt(name);
+        String hsName = aesUtil.createHashValue(name);
         String encryptPhone = aesUtil.encrypt(phone);
+        String hsPhone = aesUtil.createHashValue(phone);
 
         AccountEntity accountEntity = new AccountEntity();
         accountEntity.setAccountId(accountId);
         accountEntity.setPassword(encodePassword);
         accountEntity.setNickName(nickName);
         accountEntity.setName(encryptName);
+        accountEntity.setHsName(hsName);
         accountEntity.setPhone(encryptPhone);
+        accountEntity.setHsPhone(hsPhone);
         accountRepository.save(accountEntity);
     }
 
@@ -47,20 +51,20 @@ public class AccountService {
     }
 
     public boolean existName(String name) {
-        String encryptName = aesUtil.encrypt(name);
-        return accountRepository.existsByNameAndExist(encryptName, 1);
+        String hsName = aesUtil.createHashValue(name);
+        return accountRepository.existsByHsNameAndExist(hsName, 1);
     }
 
     public boolean existPhone(String phone) {
-        String encryptPhone = aesUtil.encrypt(phone);
-        return accountRepository.existsByPhoneAndExist(encryptPhone, 1);
+        String hsPhone = aesUtil.createHashValue(phone);
+        return accountRepository.existsByHsPhoneAndExist(hsPhone, 1);
     }
 
     public String findId(String name, String phone) {
 
-        String encryptName = aesUtil.encrypt(name);
-        String encryptPhone = aesUtil.encrypt(phone);
-        AccountEntity accountEntity = accountRepository.findByNameAndPhone(encryptName, encryptPhone);
+        String hsName = aesUtil.createHashValue(name);
+        String hsPhone = aesUtil.createHashValue(phone);
+        AccountEntity accountEntity = accountRepository.findByHsNameAndHsPhone(hsName, hsPhone);
         if (accountEntity == null || accountEntity.getExist() == 0) {
             return "일치하는 아이디가 없습니다.";
         } else {
@@ -75,9 +79,9 @@ public class AccountService {
     @Transactional(rollbackFor = Exception.class)
     public String resetPassword(String accountId, String name, String phone) {
 
-        String encryptName = aesUtil.encrypt(name);
-        String encryptPhone = aesUtil.encrypt(phone);
-        AccountEntity accountEntity = accountRepository.findByAccountIdAndNameAndPhone(accountId, encryptName, encryptPhone);
+        String hsName = aesUtil.createHashValue(name);
+        String hsPhone = aesUtil.createHashValue(phone);
+        AccountEntity accountEntity = accountRepository.findByAccountIdAndHsNameAndHsPhone(accountId, hsName, hsPhone);
         if (accountEntity == null || accountEntity.getExist() == 0) {
             return "일치하는 회원이 없습니다.";
         } else {
@@ -106,8 +110,10 @@ public class AccountService {
 
         AccountEntity accountEntity = accountRepository.findById(accountId).orElse(null);
         if (accountEntity != null) {
-            accountEntity.setName(aesUtil.nameInfo(accountEntity.getName()));
-            accountEntity.setPhone(aesUtil.phoneInfo(accountEntity.getPhone()));
+            String name = aesUtil.nameInfo(accountEntity.getName());
+            String phone = aesUtil.phoneInfo(accountEntity.getPhone());
+            accountEntity.setName(name);
+            accountEntity.setPhone(phone);
         }
         return accountEntity;
     }
@@ -129,11 +135,15 @@ public class AccountService {
                 break;
             case "name":
                 String encryptName = aesUtil.encrypt(value);
+                String hsName = aesUtil.createHashValue(value);
                 accountEntity.setName(encryptName);
+                accountEntity.setHsName(hsName);
                 break;
             case "phone":
                 String encryptPhone = aesUtil.encrypt(value);
+                String hsPhone = aesUtil.createHashValue(value);
                 accountEntity.setPhone(encryptPhone);
+                accountEntity.setHsPhone(hsPhone);
                 break;
         }
         return 1;

@@ -55,4 +55,4 @@ src/main/webapp/
 <img width="600" height="300" src="assets/아키텍처_v1.png"/>
 
 ## 테이블
-<img width="800" height="550" src="assets/erd_v1.png"/>
+<img width="800" height="550" src="assets/erd_v2.png"/>

@@ -1,0 +1,38 @@
+server:
+  servlet:
+    context-path: /
+    session:
+      cookie:
+        http-only: 'true'
+
+spring:
+  application:
+    name: board
+  profiles:
+    default: local
+
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: true
+        default_batch_fetch_size: 15
+
+  datasource:
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  cache:
+    type: caffeine

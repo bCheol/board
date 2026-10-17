@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://mariadb0:3306/board_db?useUnicode=true&characterEncoding=UTF-8&useBulkStmts=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+logging:
+  config: classpath:logback-prod.xml

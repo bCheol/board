@@ -1,0 +1,365 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", "Malgun Gothic", -apple-system, sans-serif;
+    background-color: #f4f6f8;
+    color: #2b2f36;
+}
+
+.wrap {
+    max-width: 1480px;
+    min-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+.site-header {
+    padding: 24px 0 16px;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2b6cb0;
+    text-decoration: none;
+}
+
+.content {
+    background: #ffffff;
+    border: 1px solid #e2e6ea;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.page-title {
+    margin: 0 0 20px;
+    font-size: 20px;
+}
+
+/** 알림 메시지 */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alert-info {
+    background: #eaf3fc;
+    color: #205a90;
+    border: 1px solid #cfe3f7;
+}
+
+.alert-warning {
+    background: #fff7e6;
+    color: #8a5a00;
+    border: 1px solid #ffe4a6;
+}
+
+.alert-error {
+    background: #fdecec;
+    color: #a12727;
+    border: 1px solid #f6c8c8;
+}
+
+/** 관리자 페이지 상단 탭 (회원 목록 / 신고 목록) */
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.text-muted {
+    color: #8a94a1;
+}
+
+.board-table td.cell-left {
+    text-align: left;
+}
+
+.board-table td.cell-left a {
+    color: #2b2f36;
+    text-decoration: none;
+}
+
+.board-table td.cell-left a:hover {
+    color: #2b6cb0;
+    text-decoration: underline;
+}
+
+/** 게시글 제목: 게시글 칸 너비를 넘으면 한 줄로 잘라 "..." 표시 (전체 제목은 title 툴팁) */
+.board-title-cell {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/** 신고 목록에서 게시글 제목은 <button>(모달 트리거) - 표 텍스트처럼 보이게 기본 버튼 스타일 제거 */
+button.board-title-cell {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/** 신고 목록 표: colgroup 너비를 확정해 각 칸 너비를 고정한다 (제목/신고 이유 자르기 기준) */
+.board-table-fixed {
+    table-layout: fixed;
+}
+
+/** 신고 이유: 신고 이유 칸 너비를 넘으면 한 줄로 잘라 "..." 표시 */
+.reason-cell {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/** 실제로 잘린 신고 이유는 클릭해서 전체 보기 (admin-reports.js 가 클래스 부여). 색은 일반 텍스트(검은색) 유지 */
+.reason-cell.reason-clip {
+    cursor: pointer;
+}
+
+/** 신고 이유 전체 보기 모달 본문 */
+.report-reason-full {
+    margin: 0 0 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+}
+
+/** 게시글 미리보기 모달 작성자: 닫기 버튼과 같은 줄 왼쪽 끝 */
+.board-modal-writer {
+    margin-right: auto;
+    align-self: center;
+    font-size: 13px;
+    color: #8a94a1;
+}
+
+/** 목록 상단 툴바 */
+.board-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.search-form {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.search-form select,
+.search-form input[type="text"] {
+    padding: 8px 10px;
+    border: 1px solid #d3d9e0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.input-keyword {
+    width: 220px;
+}
+
+/** 목록 테이블 */
+.board-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 0 auto;
+}
+
+.board-table th,
+.board-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid #eceff2;
+}
+
+.board-table th {
+    background: #f8f9fb;
+    color: #55606b;
+    font-weight: 600;
+}
+
+.board-table td.title-cell {
+    text-align: left;
+}
+
+.title-cell a {
+    margin-left: 25%;
+    color: #2b2f36;
+    text-decoration: none;
+}
+
+.title-cell a:hover {
+    color: #2b6cb0;
+    text-decoration: underline;
+}
+
+.empty-row {
+    padding: 40px 0;
+    color: #8a94a1;
+}
+
+/** 페이징 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 20px;
+}
+
+.page-link {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid #e2e6ea;
+    border-radius: 6px;
+    color: #55606b;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.page-link.active {
+    background: #2b6cb0;
+    border-color: #2b6cb0;
+    color: #fff;
+}
+
+.page-link:hover:not(.active) {
+    background: #f4f6f8;
+}
+
+/** 상세 화면 */
+.detail-title {
+    margin: 0 0 12px;
+    font-size: 22px;
+    white-space: pre-wrap;
+}
+
+.detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #8a94a1;
+    border-bottom: 1px solid #eceff2;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+/** 작성자 정보와 같은 줄 오른쪽 끝, 비슷한 크기의 신고 버튼 */
+.detail-meta .report-btn {
+    margin-left: auto;
+    padding: 4px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #a12727;
+    background: #fff;
+    border: 1px solid #f6c8c8;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.detail-meta .report-btn:hover {
+    background: #fdecec;
+}
+
+.detail-body {
+    min-height: 120px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/** 버튼 */
+.btn {
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #2b6cb0;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #245a92;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #55606b;
+    border-color: #d3d9e0;
+}
+
+.btn-secondary:hover {
+    background: #f4f6f8;
+}
+
+.btn-danger {
+    background: #e0554b;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c8483f;
+}
+
+/** 폼 */
+.board-form .form-row {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.board-form label {
+    font-size: 13px;
+    color: #55606b;
+    font-weight: 600;
+}
+
+.board-form input[type="text"],
+.board-form textarea {
+    padding: 10px 12px;
+    border: 1px solid #d3d9e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+}
+
+.board-form input[readonly] {
+    background: #f4f6f8;
+    color: #8a94a1;
+}
+
+.board-form textarea {
+    resize: vertical;
+}

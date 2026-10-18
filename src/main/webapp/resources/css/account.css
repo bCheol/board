@@ -1,0 +1,192 @@
+/** 로그인 기능 전용 스타일. board.css(게시판)와 분리해서 관리한다. */
+
+/** 공통 헤더: 로고(게시판)와 로그인 상태 바를 같은 줄 양 끝에 배치 (board.css의 .site-header를 덮어씀) */
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/** 로그인 상태 바 (헤더 오른쪽 끝) */
+.account-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.account-bar .btn {
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.account-name {
+    color: #2b2f36;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.account-name:hover {
+    color: #2b6cb0;
+}
+
+/** 로그인/회원가입/아이디,비밀번호 찾기 공통 박스: 화면 가운데 정렬 */
+.auth-page {
+    min-height: 55vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-box {
+    width: 100%;
+    max-width: 360px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.auth-box-wide {
+    max-width: 420px;
+}
+
+.auth-form {
+    text-align: left;
+}
+
+/** board.css는 input[type="text"]만 스타일링하므로, 비밀번호 입력칸도 동일하게 맞춰준다
+   (board.css는 건드리지 않고 board-form을 재사용하는 계정 폼에서만 보정) */
+.board-form input[type="password"] {
+    padding: 10px 12px;
+    border: 1px solid #d3d9e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+}
+
+.auth-submit {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.auth-links {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #55606b;
+}
+
+.auth-links a {
+    color: #2b6cb0;
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+.auth-links-sep {
+    color: #d3d9e0;
+}
+
+.input-with-btn {
+    display: flex;
+    gap: 6px;
+}
+
+.input-with-btn input {
+    flex: 1;
+}
+
+.field-hint {
+    font-size: 12px;
+    min-height: 16px;
+    display: inline-block;
+}
+
+.field-hint-ok {
+    color: #2f8a4e;
+}
+
+.field-hint-error {
+    color: #a12727;
+}
+
+/** 내 정보 페이지 */
+.mypage-box {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.info-table th,
+.info-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #eceff2;
+}
+
+.info-table th {
+    width: 110px;
+    color: #55606b;
+    font-weight: 600;
+    background: #f8f9fb;
+}
+
+.info-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.info-table .field-value {
+    overflow-wrap: anywhere;
+}
+
+.info-table .withdraw-desc {
+    color: #8a94a1;
+    font-size: 13px;
+}
+
+.info-table .btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/** 회원정보 수정 모달 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 47, 54, 0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+}

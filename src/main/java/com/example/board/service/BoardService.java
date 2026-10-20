@@ -7,7 +7,8 @@ import com.example.board.entity.BoardEntity;
 import com.example.board.repository.BoardRepository;
 import com.example.board.repository.BoardSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,16 +19,33 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
     public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final CacheManager cacheManager;
+    private final SchedulerService schedulerService;
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "ltBoardList", key = "#cond.page", condition = "#cond.cache and (#cond.sort.equals('latest') and #cond.searchType.equals('all') and (#cond.keyword == null or #cond.keyword.isBlank()) and (1 <= #cond.page and #cond.page <= 3))")
     public ResponseListResult<BoardEntity> list(BoardSearchCondition cond) {
+
+        if (cond.isCache()
+                && ("latest".equals(cond.getSort())) && (cond.getKeyword() == null || cond.getKeyword().isBlank())
+                && (1 <= cond.getPage() && cond.getPage() <= 3)) {
+
+                Cache cache = cacheManager.getCache("ltBoardList");
+                List<BoardEntity> value = cache.get("data", List.class);
+                long totalCount = cache.get("totalCount", Long.class);
+                int start = (cond.getPage()-1) * 15;
+                int end = start + 15;
+
+                PageInfo pageInfo = new PageInfo(cond.getPage(), cond.getSize(), totalCount);
+                return new ResponseListResult<BoardEntity>(value.subList(start, end), pageInfo);
+        }
+
         Specification<BoardEntity> spec = Specification.where(BoardSpecification.notBlocked());
         if (StringUtils.hasText(cond.getKeyword())) {
             spec = spec.and(BoardSpecification.keywordLike(cond.getSearchType(), cond.getKeyword()));
@@ -58,8 +76,11 @@ import java.time.LocalDateTime;
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void write(BoardEntity board) {
-        boardRepository.save(board);
+    public int write(String title, String body, String writer) {
+
+        BoardEntity boardEntity = new BoardEntity(title, body, writer);
+        boardRepository.save(boardEntity);
+        return boardEntity.getNum();
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -92,5 +113,32 @@ import java.time.LocalDateTime;
 
     private boolean equalsAccountId(BoardEntity boardEntity, String accountId) {
         return boardEntity.getAccountId().equals(accountId);
+    }
+
+    public void cacheModify(String type, int boardNum, String title, String nickName) {
+
+        Cache cache = cacheManager.getCache("ltBoardList");
+        List<BoardEntity> value = cache.get("data", List.class);
+
+        if (value == null)
+            return;
+
+        if ("viewCount".equals(type)) {
+            value.stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setViewCount(board.getViewCount() + 1));
+        } else if ("write".equals(type)) {
+            BoardEntity boardEntity = new BoardEntity();
+            boardEntity.setNum(boardNum);
+            boardEntity.setTitle(title);
+            boardEntity.setTempWriter(nickName);
+            boardEntity.setCreateTm(LocalDateTime.now());
+            boardEntity.setViewCount(1);
+            value.add(0, boardEntity);
+        } else if ("modify".equals(type)) {
+            value.stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setTitle(title));
+        } else if ("delete".equals(type)) {
+            boolean result = value.stream().anyMatch(board -> boardNum == board.getNum());
+            if (result)
+                schedulerService.cacheUpdate();
+        }
     }
 }

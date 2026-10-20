@@ -8,8 +8,6 @@ import com.example.board.service.BoardService;
 import com.example.board.service.SchedulerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,8 +24,6 @@ public class BoardController {
 
     private final BoardService boardService;
     private final ExecutorService threadPool;
-
-    private final CacheManager cacheManager;
     private final SchedulerService schedulerService;
 
     @GetMapping({"", "/"})
@@ -45,7 +41,7 @@ public class BoardController {
     }
 
     @GetMapping("/board/detail/{boardNum}")
-    public String detail(@AuthenticationPrincipal AccountUserDetails accountUserDetails, @PathVariable int boardNum, Model model, @RequestParam(defaultValue = "0") int page, RedirectAttributes ra) {
+    public String detail(@AuthenticationPrincipal AccountUserDetails accountUserDetails, @PathVariable int boardNum, Model model, RedirectAttributes ra) {
 
         BoardEntity board = boardService.getById(boardNum);
         if (board == null) {
@@ -71,8 +67,8 @@ public class BoardController {
             @Override
             public void run() {
                 boardService.increaseViewCount(boardNum);
-                if (schedulerService.runningScheduler() && (1 <= page && page <= 3))
-                    cacheModify("viewCount", page, boardNum, null);
+                if (schedulerService.runningScheduler())
+                    boardService.cacheModify("viewCount", boardNum, null, null);
             }
         });
         return "board/detail";
@@ -110,21 +106,20 @@ public class BoardController {
             return "redirect:/board/write";
         }
 
-        BoardEntity boardEntity = new BoardEntity(title, body, accountUserDetails.getUsername());
-
+        int boardNum;
         try {
-            boardService.write(boardEntity);
+            boardNum = boardService.write(title, body, accountUserDetails.getUsername());
             if (schedulerService.runningScheduler())
-                schedulerService.cacheUpdate();
+                boardService.cacheModify("write", boardNum, title, accountUserDetails.getNickName());
         } catch (Exception e) {
             log.error("/board/write", e);
             ra.addFlashAttribute("message", "등록에 실패했습니다.");
-            ra.addFlashAttribute("board", boardEntity);
+            ra.addFlashAttribute("board", Map.of("title", title, "body", body));
             return "redirect:/board/write";
         }
 
         ra.addFlashAttribute("message", "게시글이 등록되었습니다.");
-        return "redirect:/board/detail/" + boardEntity.getNum();
+        return "redirect:/board/detail/" + boardNum;
     }
 
     @GetMapping("/board/edit/{boardNum}")
@@ -179,6 +174,10 @@ public class BoardController {
         int success = 0;
         try {
             success = boardService.update(boardNum, accountUserDetails.getUsername(), title, body);
+            if (success == 1) {
+                if (schedulerService.runningScheduler())
+                    boardService.cacheModify("modify", boardNum, title, null);
+            }
         } catch (Exception e) {
             log.error("/board/edit/{boardNum}/update", e);
             ra.addFlashAttribute("message", "수정에 실패했습니다.");
@@ -190,11 +189,6 @@ public class BoardController {
         switch (success) {
             case 1:
                 ra.addFlashAttribute("message", "게시글이 수정되었습니다.");
-                int page = 0;
-                if (param.get("page") != null)
-                    page = Integer.parseInt(param.get("page"));
-                if (schedulerService.runningScheduler() && (1 <= page && page <= 3))
-                    cacheModify(null, page, boardNum, title);
             break;
             case 0:
                 ra.addFlashAttribute("message", "글이 존재하지 않습니다.");
@@ -213,7 +207,7 @@ public class BoardController {
     }
 
     @PostMapping("/board/delete/{boardNum}")
-    public String delete(@AuthenticationPrincipal AccountUserDetails accountUserDetails, @PathVariable int boardNum, @RequestParam(defaultValue = "0") int page, RedirectAttributes ra) {
+    public String delete(@AuthenticationPrincipal AccountUserDetails accountUserDetails, @PathVariable int boardNum, RedirectAttributes ra) {
 
         if (accountUserDetails == null) {
             return "redirect:/account/login";
@@ -222,6 +216,10 @@ public class BoardController {
         int success = 0;
         try {
             success = boardService.delete(boardNum, accountUserDetails.getUsername());
+            if (success == 1) {
+                if (schedulerService.runningScheduler())
+                    boardService.cacheModify("delete", boardNum, null, null);
+            }
         } catch (Exception e) {
             log.error("/board/delete/{boardNum}", e);
             ra.addFlashAttribute("message", "삭제에 실패했습니다.");
@@ -231,8 +229,6 @@ public class BoardController {
         switch (success) {
             case 1:
                 ra.addFlashAttribute("message", "게시글이 삭제되었습니다.");
-                if (schedulerService.runningScheduler() && (1 <= page && page <= 3))
-                    schedulerService.cacheUpdate();
                 return "redirect:/";
             case 0:
                 ra.addFlashAttribute("message", "글이 존재하지 않습니다.");
@@ -245,19 +241,6 @@ public class BoardController {
                 break;
         }
         return "redirect:/board/detail/" + boardNum;
-    }
-
-    public void cacheModify(String type, int page, int boardNum, String title) {
-
-        Cache cache = cacheManager.getCache("ltBoardList");
-        ResponseListResult<BoardEntity> value = cache.get(page, ResponseListResult.class);
-        if (value == null)
-            return;
-        if ("viewCount".equals(type)) {
-            value.getDataList().stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setViewCount(board.getViewCount() + 1));
-        } else {
-            value.getDataList().stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setTitle(title));
-        }
     }
 
 }

@@ -48,6 +48,9 @@ public class BoardEntity {
     @JoinColumn(name = "account_id", insertable = false, updatable = false)
     private AccountEntity accountEntity;
 
+    @Transient
+    private String tempWriter;
+
     public BoardEntity(String title, String body, String accountId) {
         this.title = title;
         this.body = body;
@@ -55,6 +58,6 @@ public class BoardEntity {
     }
 
     public String getWriterNickName() {
-        return accountEntity.getNickName();
+        return accountEntity != null ? accountEntity.getNickName() : tempWriter;
     }
 }

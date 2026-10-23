@@ -7,3 +7,4 @@ export DB_PASSWORD=1234
 export TEMP_PW_KEY=ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz123456789
 
 export AES_KEY=dksovtlpxqdupucjubnfmdpdhczyzfyf
+export HASH_KEY=ubnfmdpdhczyzfyfdksovtlpxqdupucj

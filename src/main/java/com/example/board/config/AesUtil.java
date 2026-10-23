@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
@@ -24,7 +24,9 @@ public class AesUtil {
     int TAG_LENGTH_BITS = 128;
     int IV_LENGTH_BYTES = 12;
     @Value("${AES_KEY}")
-    String KEY;
+    String aesKey;
+    @Value("${HASH_KEY}")
+    String hashKey;
     SecureRandom secureRandom = new SecureRandom();
 
     public String encrypt(String plainText) {
@@ -32,7 +34,7 @@ public class AesUtil {
         try {
             byte[] iv = new byte[IV_LENGTH_BYTES];
             secureRandom.nextBytes(iv);
-            SecretKeySpec keySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec keySpec = new SecretKeySpec(aesKey.getBytes(StandardCharsets.UTF_8), "AES");
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
@@ -55,7 +57,7 @@ public class AesUtil {
             byte[] iv = Arrays.copyOfRange(data, 0, IV_LENGTH_BYTES);
             byte[] encryptedText = Arrays.copyOfRange(data, IV_LENGTH_BYTES, data.length);
 
-            SecretKeySpec keySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec keySpec = new SecretKeySpec(aesKey.getBytes(StandardCharsets.UTF_8), "AES");
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, keySpec, new GCMParameterSpec(TAG_LENGTH_BITS, iv));
@@ -77,13 +79,15 @@ public class AesUtil {
         return decryptPhone.substring(0, 2) + "*" + decryptPhone.substring(3, 5) + "**" + decryptPhone.substring(7, 9) + "**";
     }
 
-    public String createHashValue(String input) {
+    public String createHashValue(String plainText) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec key = new SecretKeySpec(hashKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(key);
+            byte[] hash = mac.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(hash);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("createHash", e);
         }
     }
 

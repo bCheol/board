@@ -18,8 +18,6 @@ COPY setenv.sh /usr/local/tomcat/bin/setenv.sh
 
 COPY --from=build-stage /app/build/libs/board-0.0.1-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
-VOLUME /_a
-
 EXPOSE 80
 
 CMD ["catalina.sh", "run"]

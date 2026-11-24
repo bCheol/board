@@ -7,8 +7,10 @@ import com.example.board.entity.BoardEntity;
 import com.example.board.repository.BoardRepository;
 import com.example.board.repository.BoardSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,14 +22,17 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
     public class BoardService {
 
     private final BoardRepository boardRepository;
     private final CacheManager cacheManager;
-    private final SchedulerService schedulerService;
 
     @Transactional(readOnly = true)
     public ResponseListResult<BoardEntity> list(BoardSearchCondition cond) {
@@ -36,14 +41,18 @@ import java.util.List;
                 && ("latest".equals(cond.getSort())) && (cond.getKeyword() == null || cond.getKeyword().isBlank())
                 && (1 <= cond.getPage() && cond.getPage() <= 3)) {
 
-                Cache cache = cacheManager.getCache("ltBoardList");
-                List<BoardEntity> value = cache.get("data", List.class);
-                long totalCount = cache.get("totalCount", Long.class);
-                int start = (cond.getPage()-1) * 15;
-                int end = start + 15;
+            Cache cache = cacheManager.getCache("ltBoardList");
+            List<BoardEntity> value = cache.get("data", List.class);
+            Long totalCount = cache.get("totalCount", Long.class);
+
+            if (value != null && totalCount != null) {
+                int start = (cond.getPage() - 1) * cond.getSize();
 
                 PageInfo pageInfo = new PageInfo(cond.getPage(), cond.getSize(), totalCount);
-                return new ResponseListResult<BoardEntity>(value.subList(start, end), pageInfo);
+                List<BoardEntity> viewList = value.stream().skip(start).limit(cond.getSize()).toList();
+
+                return new ResponseListResult<BoardEntity>(viewList, pageInfo);
+            }
         }
 
         Specification<BoardEntity> spec = Specification.where(BoardSpecification.notBlocked());
@@ -57,7 +66,6 @@ import java.util.List;
         PageInfo pageInfo = new PageInfo(cond.getPage(), cond.getSize(), page.getTotalElements());
         return new ResponseListResult<BoardEntity>(page.getContent(), pageInfo);
     }
-
 
     private Sort resolveSort(String sort) {
         if ("view".equals(sort)) {
@@ -115,30 +123,87 @@ import java.util.List;
         return boardEntity.getAccountId().equals(accountId);
     }
 
-    public void cacheModify(String type, int boardNum, String title, String nickName) {
+    public void cacheViewCount(Integer value) {
+        CaffeineCache cache = (CaffeineCache) cacheManager.getCache("ltBoardList");
 
-        Cache cache = cacheManager.getCache("ltBoardList");
-        List<BoardEntity> value = cache.get("data", List.class);
+        cache.getNativeCache().asMap().compute("data", (data, old) -> {
+            List<BoardEntity> list = (List<BoardEntity>) old;
+            for (BoardEntity board : list) {
+                if (board.getNum().equals(value)) {
+                    board.setViewCount(board.getViewCount() + 1);
+                    break;
+                }
+            }
+            return list;
+        });
+    }
 
-        if (value == null)
-            return;
+    public void cacheModifyAndDelete(String type, Object value) {
+        CaffeineCache cache = (CaffeineCache) cacheManager.getCache("ltBoardList");
 
-        if ("viewCount".equals(type)) {
-            value.stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setViewCount(board.getViewCount() + 1));
-        } else if ("write".equals(type)) {
-            BoardEntity boardEntity = new BoardEntity();
-            boardEntity.setNum(boardNum);
-            boardEntity.setTitle(title);
-            boardEntity.setTempWriter(nickName);
-            boardEntity.setCreateTm(LocalDateTime.now());
-            boardEntity.setViewCount(1);
-            value.add(0, boardEntity);
-        } else if ("modify".equals(type)) {
-            value.stream().filter(board -> boardNum == board.getNum()).forEach(board -> board.setTitle(title));
+        if ("modify".equals(type)) {
+            Map<String, Object> map = (Map<String, Object>) value;
+
+            cache.getNativeCache().asMap().compute("data", (data, old) -> {
+                List<BoardEntity> list = (List<BoardEntity>) old;
+                for (BoardEntity board : list) {
+                    if (board.getNum().equals(map.get("boardNum"))) {
+                        board.setTitle((String) map.get("title"));
+                        break;
+                    }
+                }
+                return list;
+            });
         } else if ("delete".equals(type)) {
-            boolean result = value.stream().anyMatch(board -> boardNum == board.getNum());
+            List<BoardEntity> data = (List<BoardEntity>) cache.getNativeCache().getIfPresent("data");
+            boolean result = data.stream().anyMatch(board -> Objects.equals(value, board.getNum()));
             if (result)
-                schedulerService.cacheUpdate();
+                this.cacheWriteAndUpdate("update", null);;
+        }
+    }
+
+    public void cacheWriteAndUpdate(String type, Object value) {
+
+        CaffeineCache cache = (CaffeineCache) cacheManager.getCache("ltBoardList");
+
+        if ("write".equals(type)) {
+            Map<String, Object> map = (Map<String, Object>) value;
+            BoardEntity boardEntity = new BoardEntity();
+            boardEntity.setNum((Integer) map.get("boardNum"));
+            boardEntity.setTitle((String) map.get("title"));
+            boardEntity.setTempWriter((String) map.get("nickName"));
+            boardEntity.setCreateTm(LocalDateTime.now());
+            boardEntity.setViewCount(0);
+
+            final boolean[] exists = new boolean[1];
+
+            cache.getNativeCache().asMap().compute("data", (data, oldList) -> {
+                List<BoardEntity> list = (List<BoardEntity>) oldList;
+                exists[0] = list.stream().anyMatch(board -> boardEntity.getNum().equals(board.getNum()));
+                if (!exists[0])
+                    list.add(0, boardEntity);
+
+                return list;
+            });
+
+            if (!exists[0]) {
+                cache.getNativeCache().asMap().compute("totalCount", (totalCount, oldCount) ->
+                        (Long) oldCount + 1
+                );
+            }
+        } else if ("update".equals(type)) {
+
+            List<BoardEntity> list;
+            Long totalCount;
+            try {
+                list = boardRepository.findTop45ByBlockNotOrderByCreateTmDescNumDesc(1);
+                totalCount = boardRepository.countByBlockNot(1);
+            } catch (Exception e) {
+                log.error("cacheWriteAndUpdate() update", e);
+                return;
+            }
+            cache.getNativeCache().asMap().compute("data", (data, oldList) -> new CopyOnWriteArrayList<>(list));
+            cache.getNativeCache().asMap().compute("totalCount", (count, oldCount) -> totalCount);
         }
     }
 }

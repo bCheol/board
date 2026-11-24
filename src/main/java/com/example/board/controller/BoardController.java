@@ -68,7 +68,7 @@ public class BoardController {
             public void run() {
                 boardService.increaseViewCount(boardNum);
                 if (schedulerService.runningScheduler())
-                    boardService.cacheModify("viewCount", boardNum, null, null);
+                    boardService.cacheViewCount(boardNum);
             }
         });
         return "board/detail";
@@ -110,7 +110,7 @@ public class BoardController {
         try {
             boardNum = boardService.write(title, body, accountUserDetails.getUsername());
             if (schedulerService.runningScheduler())
-                boardService.cacheModify("write", boardNum, title, accountUserDetails.getNickName());
+                boardService.cacheWriteAndUpdate("write",Map.of("boardNum", boardNum, "title", title, "nickName", accountUserDetails.getNickName()));
         } catch (Exception e) {
             log.error("/board/write", e);
             ra.addFlashAttribute("message", "등록에 실패했습니다.");
@@ -176,7 +176,7 @@ public class BoardController {
             success = boardService.update(boardNum, accountUserDetails.getUsername(), title, body);
             if (success == 1) {
                 if (schedulerService.runningScheduler())
-                    boardService.cacheModify("modify", boardNum, title, null);
+                    boardService.cacheModifyAndDelete("modify", Map.of("boardNum", boardNum, "title", title));
             }
         } catch (Exception e) {
             log.error("/board/edit/{boardNum}/update", e);
@@ -218,7 +218,7 @@ public class BoardController {
             success = boardService.delete(boardNum, accountUserDetails.getUsername());
             if (success == 1) {
                 if (schedulerService.runningScheduler())
-                    boardService.cacheModify("delete", boardNum, null, null);
+                    boardService.cacheModifyAndDelete("delete", (Integer) boardNum);
             }
         } catch (Exception e) {
             log.error("/board/delete/{boardNum}", e);

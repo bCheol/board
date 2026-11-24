@@ -2,10 +2,7 @@ package com.example.board.controller;
 
 import com.example.board.dto.*;
 import com.example.board.entity.ReportBoardEntity;
-import com.example.board.service.AccountService;
-import com.example.board.service.AdminService;
-import com.example.board.service.ReportService;
-import com.example.board.service.SchedulerService;
+import com.example.board.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -26,6 +23,7 @@ public class AdminController {
     private final AccountService accountService;
     private final ReportService reportService;
     private final SchedulerService schedulerService;
+    private final BoardService boardService;
 
     /** 글 신고 목록 */
     @GetMapping("/reports")
@@ -53,7 +51,7 @@ public class AdminController {
         String serviceResult = reportService.processReport(num, result, accountUserDetails.getUsername());
         if (serviceResult == null) {
             if (schedulerService.runningScheduler())
-                schedulerService.cacheUpdate();
+                boardService.cacheWriteAndUpdate("update", null);
             return new ResponseResult(true, "신고를 처리했습니다.");
         } else {
             return new ResponseResult(false, serviceResult);

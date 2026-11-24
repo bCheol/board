@@ -17,7 +17,6 @@ public class CaffeineCacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("ltBoardList");
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .maximumSize(3)
                 .expireAfterWrite(Duration.ofSeconds(70)));
         return cacheManager;
     }

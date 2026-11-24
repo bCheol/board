@@ -45,11 +45,11 @@ src/main/webapp/
 ```
 
 ## 권한 분류
-| 권한          | 설명                           |
+| 권한            | 설명                           |
 |---------------|------------------------------|
 | `USER`        | 일반 회원                        |
-| `LOWER_ADMIN` | 신고 글 관리, 스케줄러 관리             |
-| `UPPER_ADMIN` | LOWER_ADMIN 포함, 회원 관리, 권한 변경 |
+| `ADMIN_LOWER` | 신고 글 관리, 스케줄러 관리             |
+| `ADMIN_UPPER` | ADMIN_LOWER 포함, 회원 관리, 권한 변경 |
 
 ## 시스템 아키텍처
 <img width="600" height="300" src="assets/아키텍처_v1.png"/>

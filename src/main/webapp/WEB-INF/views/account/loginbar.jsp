@@ -12,7 +12,7 @@
             <a href="${pageContext.request.contextPath}/account/login" class="btn btn-primary">로그인</a>
         </sec:authorize>
         <sec:authorize access="isAuthenticated()">
-            <sec:authorize access="hasAnyRole('LOWER_ADMIN', 'UPPER_ADMIN')">
+            <sec:authorize access="hasAnyRole('ADMIN_LOWER', 'ADMIN_UPPER')">
                 <a href="${pageContext.request.contextPath}/admin/reports" class="btn btn-secondary">관리자 페이지</a>
             </sec:authorize>
             <a href="${pageContext.request.contextPath}/account/mypage" class="account-name">

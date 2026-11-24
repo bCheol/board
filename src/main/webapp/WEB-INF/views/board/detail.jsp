@@ -12,8 +12,8 @@
     <sec:authentication property="principal" var="user" />
 </sec:authorize>
 <c:set var="canReport" value="${not empty user
-        and user.role != 'UPPER_ADMIN'
-        and user.role != 'LOWER_ADMIN'
+        and user.role != 'ADMIN_UPPER'
+        and user.role != 'ADMIN_LOWER'
         and user.username != board.accountId}" />
 
 <c:url var="listUrl" value="/">

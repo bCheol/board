@@ -120,7 +120,7 @@ public class AdminController {
         if (!accountService.verifyPassword(accountUserDetails.getUsername(), password)) {
             return new ResponseResult(false, "비밀번호가 일치하지 않습니다.");
         } else {
-            if ("USER".equals(roleType) || "LOWER_ADMIN".equals(roleType) ||"UPPER_ADMIN".equals(roleType)) {
+            if ("USER".equals(roleType) || "ADMIN_LOWER".equals(roleType) ||"ADMIN_UPPER".equals(roleType)) {
                 int result = adminService.changeMemberRole(accountId, roleType);
                 if (result == 1) {
                     return new ResponseResult(true, "권한을 변경했습니다.");

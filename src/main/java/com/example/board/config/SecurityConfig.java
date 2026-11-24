@@ -22,8 +22,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/admin/setting/stop/**"))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/members/**", "/admin/setting/**").hasRole("UPPER_ADMIN")
-                        .requestMatchers("/admin/reports/**", "/admin/scheduler/**").hasAnyRole("LOWER_ADMIN", "UPPER_ADMIN")
+                        .requestMatchers("/admin/members/**", "/admin/setting/**").hasRole("ADMIN_UPPER")
+                        .requestMatchers("/admin/reports/**", "/admin/scheduler/**").hasAnyRole("ADMIN_LOWER", "ADMIN_UPPER")
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form

@@ -152,8 +152,8 @@
                 <label for="role-select">권한</label>
                 <select id="role-select" name="role" class="input-search-type">
                     <option value="USER">일반</option>
-                    <option value="LOWER_ADMIN">하위 관리자</option>
-                    <option value="UPPER_ADMIN">상위 관리자</option>
+                    <option value="ADMIN_LOWER">하위 관리자</option>
+                    <option value="ADMIN_UPPER">상위 관리자</option>
                 </select>
             </div>
             <div class="form-row">

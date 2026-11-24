@@ -8,11 +8,11 @@
 
 <div class="admin-tabs">
     <a href="${pageContext.request.contextPath}/admin/reports" class="btn btn-secondary">신고 목록</a>
-    <sec:authorize access="hasRole('UPPER_ADMIN')">
+    <sec:authorize access="hasRole('ADMIN_UPPER')">
         <a href="${pageContext.request.contextPath}/admin/members" class="btn btn-secondary">회원 목록</a>
     </sec:authorize>
     <a href="${pageContext.request.contextPath}/admin/schedule" class="btn btn-primary">스케줄러 설정</a>
-    <sec:authorize access="hasRole('UPPER_ADMIN')">
+    <sec:authorize access="hasRole('ADMIN_UPPER')">
         <a href="${pageContext.request.contextPath}/admin/setting" class="btn btn-secondary">기타 설정</a>
     </sec:authorize>
 </div>

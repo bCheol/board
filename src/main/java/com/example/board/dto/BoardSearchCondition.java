@@ -11,7 +11,7 @@ public class BoardSearchCondition {
     private String keyword;
     private String sort;
     private int page;
-    private int size = 15;
+    private int size;
     private boolean cache;
 
     public String getSearchType() {
@@ -34,6 +34,6 @@ public class BoardSearchCondition {
         return Math.max(page, 1);
     }
     public int getSize() {
-        return size;
+        return 15;
     }
 }

@@ -7,7 +7,7 @@ public class ReportSearchCondition {
 
     private String status;
     private int page;
-    private int size = 15;
+    private int size;
 
     public String getStatus() {
         if ("pending".equals(status))
@@ -23,6 +23,6 @@ public class ReportSearchCondition {
     }
 
     public int getSize() {
-        return size;
+        return 15;
     }
 }

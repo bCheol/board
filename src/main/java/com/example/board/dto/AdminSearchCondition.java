@@ -12,7 +12,7 @@ public class AdminSearchCondition {
     private String blockYn;
     private String keyword;
     private int page;
-    private int size = 15;
+    private int size;
 
     public String getRoleType() {
         if ("admin".equals(roleType))
@@ -45,6 +45,6 @@ public class AdminSearchCondition {
         return Math.max(page, 1);
     }
     public int getSize() {
-        return size;
+        return 15;
     }
 }
